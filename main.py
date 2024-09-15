@@ -36,12 +36,12 @@ def check_response(response):
     return True
 
 
-def start_bot(chat_id_tg, token_bot_tg, url, auth_header):
+def start_bot(chat_id_tg, token_bot_tg, auth_header):
     bot = telegram.Bot(token=token_bot_tg)
     timestamp_to_request = None
     while (True):
         response = fetch_attempts_with_retries(
-            url, auth_header, timestamp_to_request
+            auth_header, timestamp_to_request
         )
         if not response:
             continue
@@ -56,12 +56,13 @@ def start_bot(chat_id_tg, token_bot_tg, url, auth_header):
             asyncio.run(send_messages(bot, chat_id_tg, new_attempts))
 
 
-def fetch_attempts_with_retries(url, auth_header, timestamp_to_request, retries=3, delay=4):  # noqa: E501
+def fetch_attempts_with_retries(auth_header, timestamp_to_request, retries=3, delay=4):  # noqa: E501
     for connection_try in range(retries):
         try:
             params = {
                 'timestamp': timestamp_to_request or datetime.now().timestamp()
             }
+            url = 'https://dvmn.org/api/long_polling/'
             response = requests.get(url, headers=auth_header, params=params)
             response.raise_for_status()
             return response
@@ -91,6 +92,5 @@ if __name__ == '__main__':
     tg_chat_id = env.str('TELEGRAM_CHAT_ID')
     bot_tg_token = env.str('TELEGRAM_BOT_TOKEN')
     dvmn_token = env.str('DEVMAN_TOKEN')
-    url = 'https://dvmn.org/api/long_polling/'
     auth_header = {'Authorization': f'Token {dvmn_token}'}
-    start_bot(tg_chat_id, bot_tg_token, url, auth_header)
+    start_bot(tg_chat_id, bot_tg_token, auth_header)
