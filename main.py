@@ -56,34 +56,19 @@ def start_bot(chat_id_tg, token_bot_tg, auth_header):
             asyncio.run(send_messages(bot, chat_id_tg, new_attempts))
 
 
-def fetch_attempts_with_retries(auth_header, timestamp_to_request, retries=3, delay=4):  # noqa: E501
-    for connection_try in range(retries):
-        try:
-            params = {
-                'timestamp': timestamp_to_request or datetime.now().timestamp()
-            }
-            url = 'https://dvmn.org/api/long_polling/'
-            response = requests.get(url, headers=auth_header, params=params)
-            response.raise_for_status()
-            return response
-        except (requests.ConnectionError):
-            print(
-                f'An attempt to connect {connection_try + 1} of {retries} failed'  # noqa: E501
-            )
-            if connection_try < retries - 1:
-                time.sleep(delay)
-            else:
-                print('All attempts have been exhausted.')
-                return None
-        except (requests.exceptions.ReadTimeout) as e:
-            print(f'ReadTimeout {e}')
-            return None
-        except requests.exceptions.HTTPError as e:
-            print(f'HTTPerror {e}')
-            return None
-        except requests.RequestException as e:
-            print(f'Request exception: {e}')
-            return None
+def fetch_attempts_with_retries(auth_header, timestamp_to_request):  # noqa: E501
+    params = {
+        'timestamp': timestamp_to_request or datetime.now().timestamp()
+    }
+    url = 'https://dvmn.org/api/long_polling/'
+    response = requests.get(url, headers=auth_header, params=params)
+    response.raise_for_status()
+    return response
+
+
+def exception_out(text, exception):
+    print(f'{text}: {exception}')
+    time.sleep(4)
 
 
 if __name__ == '__main__':
@@ -93,4 +78,14 @@ if __name__ == '__main__':
     bot_tg_token = env.str('TELEGRAM_BOT_TOKEN')
     dvmn_token = env.str('DEVMAN_TOKEN')
     auth_header = {'Authorization': f'Token {dvmn_token}'}
-    start_bot(tg_chat_id, bot_tg_token, auth_header)
+    while (True):
+        try:
+            start_bot(tg_chat_id, bot_tg_token, auth_header)
+        except (requests.ConnectionError) as e:
+            exception_out('ConnectionError', e)
+        except (requests.exceptions.ReadTimeout) as e:
+            exception_out('ReadTimeout', e)
+        except requests.exceptions.HTTPError as e:
+            exception_out('HTTPerror', e)
+        except Exception as e:
+            exception_out('Some error', e)
