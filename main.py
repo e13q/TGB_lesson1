@@ -8,7 +8,8 @@ import time
 
 
 def generate_message(new_attempt):
-    message = f'У вас проверили работу "{new_attempt['lesson_title']}"'
+    lesson_title = new_attempt['lesson_title']
+    message = f'У вас проверили работу "{lesson_title}"'
     message += '\n'
     if new_attempt['is_negative']:
         message += 'К сожалению, в работе нашлись ошибки.'
