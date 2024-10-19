@@ -7,6 +7,8 @@ import asyncio
 import time
 import logging
 
+from bot_logging import setup_logger
+
 
 def generate_message(new_attempt):
     lesson_title = new_attempt['lesson_title']
@@ -38,8 +40,7 @@ def check_response(response):
     return True
 
 
-def start_bot(chat_id_tg, token_bot_tg, auth_header):
-    bot = telegram.Bot(token=token_bot_tg)
+def start_main_bot(chat_id_tg, bot, auth_header):
     timestamp_to_request = None
     while (True):
         response = fetch_attempts_with_retries(
@@ -68,28 +69,37 @@ def fetch_attempts_with_retries(auth_header, timestamp_to_request):  # noqa: E50
     return response
 
 
-def exception_out(text, exception):
-    logging.error(f'{text}: {exception}')
+def exception_out(text, exception, bot, chat_id):
+    logging.error(f'{text}: {exception}', exc_info=True)
     time.sleep(4)
 
 
 if __name__ == '__main__':
     env = Env()
     env.read_env()
-    logging.basicConfig(level=logging.INFO)
-    logging.info('Стартуем!')
     tg_chat_id = env.str('TELEGRAM_CHAT_ID')
-    bot_tg_token = env.str('TELEGRAM_BOT_TOKEN')
+    main_bot = telegram.Bot(token=env.str('TELEGRAM_MAIN_BOT_TOKEN'))
+    logger_bot = telegram.Bot(token=env.str('TELEGRAM_LOGGER_BOT_TOKEN'))
+    setup_logger(logger_bot, tg_chat_id)
     dvmn_token = env.str('DEVMAN_TOKEN')
     auth_header = {'Authorization': f'Token {dvmn_token}'}
+    logging.info('Кажется, основной бот запустился.')
     while (True):
         try:
-            start_bot(tg_chat_id, bot_tg_token, auth_header)
+            start_main_bot(tg_chat_id, main_bot, auth_header)
         except (requests.ConnectionError) as e:
-            exception_out('ConnectionError', e)
+            exception_out(
+                'Ошибка ConnectionError: ', e, logger_bot, tg_chat_id
+            )
         except (requests.exceptions.ReadTimeout) as e:
-            exception_out('ReadTimeout', e)
+            exception_out(
+                'Ошибка ReadTimeout: ', e, logger_bot, tg_chat_id
+            )
         except requests.exceptions.HTTPError as e:
-            exception_out('HTTPerror', e)
+            exception_out(
+                'Ошибка HTTPerror', e, logger_bot, tg_chat_id
+            )
         except Exception as e:
-            exception_out('Some error', e)
+            exception_out(
+                'Шеф, у нас неожиданная ошибка: ', e, logger_bot, tg_chat_id
+            )
