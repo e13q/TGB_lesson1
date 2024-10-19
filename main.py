@@ -5,6 +5,7 @@ import requests
 from datetime import datetime
 import asyncio
 import time
+import logging
 
 
 def generate_message(new_attempt):
@@ -68,13 +69,15 @@ def fetch_attempts_with_retries(auth_header, timestamp_to_request):  # noqa: E50
 
 
 def exception_out(text, exception):
-    print(f'{text}: {exception}')
+    logging.error(f'{text}: {exception}')
     time.sleep(4)
 
 
 if __name__ == '__main__':
     env = Env()
     env.read_env()
+    logging.basicConfig(level=logging.INFO)
+    logging.info('Стартуем!')
     tg_chat_id = env.str('TELEGRAM_CHAT_ID')
     bot_tg_token = env.str('TELEGRAM_BOT_TOKEN')
     dvmn_token = env.str('DEVMAN_TOKEN')
