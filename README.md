@@ -13,7 +13,8 @@ pip install -r requirements.txt
 
 Для взаимодействия с [API devman](https://dvmn.org/api/docs/) необходим токен. Получить токен можно, ознакомившись с разделом "Аутентификация" в [статье](https://dvmn.org/api/docs/).
 
-Также, нужен токен для телеграмм бота. [Инструкция](https://way23.ru/%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F-%D0%B1%D0%BE%D1%82%D0%B0-%D0%B2-telegram.html).
+Также, нужно 2 токена телеграмм ботов. Один для основной работы, второй для логирования.
+[Инструкция по созданию бота](https://way23.ru/%D1%80%D0%B5%D0%B3%D0%B8%D1%81%D1%82%D1%80%D0%B0%D1%86%D0%B8%D1%8F-%D0%B1%D0%BE%D1%82%D0%B0-%D0%B2-telegram.html).
 
 И не забудьте про ID чата, получить который можно написав на [@userinfobot](https://t.me/userinfobot) пункт "id".
 
@@ -21,7 +22,8 @@ pip install -r requirements.txt
 
 ```
 DEVMAN_TOKEN = 'Ваш токен'
-TELEGRAM_BOT_TOKEN = 'Ваш токен'
+TELEGRAM_MAIN_BOT_TOKEN = 'Ваш токен основного бота'
+TELEGRAM_LOGGER_BOT_TOKEN = 'Ваш токен бота для логирования'
 TELEGRAM_CHAT_ID = 'Ваш id'
 ```
 
